@@ -7,6 +7,9 @@ interface jhWebobjectUrlHandlerInterface
     function setSize( $size );
     function getSize();
     function getArray();
+    function getParameterArray();
+    function appendParameter( $key, $value );
+    function getParameter( $key );
 }
 
 abstract class jhWebobjectUrlHandlerAbstract implements jhWebobjectUrlHandlerInterface
@@ -18,6 +21,7 @@ abstract class jhWebobjectUrlHandlerAbstract implements jhWebobjectUrlHandlerInt
     protected $width;
     protected $height;
     public $availableSizes;
+    protected $parameterArray;
 
     final function __construct( $parsedURL, $platform, $availableSizes=array() )
     {
@@ -53,12 +57,39 @@ abstract class jhWebobjectUrlHandlerAbstract implements jhWebobjectUrlHandlerInt
 
     final function getArray()
     {
-        return array(
+        $array =  array(
             'id'  => $this->getObjectID(),
             'platform' => $this->getPlatform(),
             //'parsedObjectURL' => $this->getParsedURL(),
             'dimension' => $this->getSize(),
+            'parameters' => $this->getParameterArray(),
             );
+        eZDebug::writeDebug( $array, 'jh webobjectembeder array' );
+        return $array;
+    }
+    
+    final function getParameterArray()
+    {
+        return $this->parameterArray;
+    }
+
+    final function appendParameter( $key, $value )
+    {
+        if( isset( $key ) )
+        {
+            $this->parameterArray[$key] = $value;
+            return true;
+        }
+        else return false;
+    }
+
+    final function getParameter( $key )
+    {
+        if( array_key_exists( $key, $this->parameterArray ) )
+        {
+            return $this->parameterArray[$key];
+        }
+        else return null;
     }
 }
 
@@ -184,6 +215,60 @@ class jhWebobjectUrlHandler_photopeach extends jhWebobjectUrlHandlerAbstract
     {
         list( $album, $album_id ) = explode( '/', ltrim( $this->parsedObjectURL['path'], '/' ) );
         return $album_id;
+    }
+}
+
+class jhWebobjectUrlHandler_yr extends jhWebobjectUrlHandlerAbstract
+{
+    /**
+     * http://www.yr.no/place/Norway/Akershus/Nittedal/Varingskollen_alpinsenter/
+     * http://www.yr.no/place/[Country]/[Region]/[City]/[Place]/
+     */
+    function getObjectID()
+    {
+        $pathArray = explode( '/', ltrim( $this->parsedObjectURL['path'], '/' ) );
+        if( end( $pathArray ) == 'hour_by_hour.html' )
+        {
+            $this->appendParameter( 'defaultView', 'hour_by_hour' );
+            array_pop( $pathArray );
+            return implode( '/', $pathArray );
+        }
+        else
+        {
+            $this->appendParameter( 'defaultView', 'small' );
+            return rtrim( $this->parsedObjectURL['path'], '/' );
+        }
+    }
+}
+
+class jhWebobjectUrlHandler_googlecalendar extends jhWebobjectUrlHandlerAbstract
+{
+    /**
+     * https://www.google.com/calendar/embed?height=600&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=CALENDAR_SOURCE_ID&amp;color=%23691426&amp;ctz=Europe%2FCopenhagen
+     * https://www.google.com/calendar/embed?src=CALENDAR_SOURCE_ID&ctz=Europe/Copenhagen
+     */
+    function getObjectID()
+    {
+        $this->objectID = 'default';
+        eZDebug::writeDebug( $this->parsedObjectURL['query'], 'jhwebobjectembeder - query' );
+        if( $this->parsedObjectURL['path'] == '/calendar/embed' )
+        {
+            $urlParts = explode( '&', $this->parsedObjectURL['query'] );
+            foreach( $urlParts as $urlPart )
+            {
+                eZDebug::writeDebug( $urlPart, 'jhwebobjectembeder - urlPart' );
+                if( substr( $urlPart, 0, 4 ) == 'src=' )
+                {
+                    $this->objectID = ltrim( $urlPart, 'src=' );
+                }
+            }
+            // TODO: test if objectID is set; if not, show error message
+        }
+        else
+        {
+            return 'The google calendar URI provided to the object, is not correct.';
+        }
+        return $this->objectID;
     }
 }
 

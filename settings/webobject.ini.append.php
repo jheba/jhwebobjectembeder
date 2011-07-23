@@ -5,6 +5,8 @@ Platforms[]=vimeo
 Platforms[]=youtube
 Platforms[]=slideshare
 Platforms[]=photopeach
+Platforms[]=yr
+Platforms[]=googlecalendar
 
 [vimeo]
 Hosts[]
@@ -40,4 +42,27 @@ Hosts[]=photopeach.com
 Size[]
 Size[small]=445x296
 DefaultSize=small
+
+[yr]
+Hosts[]
+Hosts[]=www.yr.no
+Hosts[]=yr.no
+Size[]
+Size[small]=445x296
+DefaultSize=small
+
+#WidgetType[]
+#WidgetType[stripe]=stripe
+#WidgetType[small]=small
+#WidgetType[hour_by_hour]=hour_by_hour
+#WidgetType[three_days]=three_days
+
+[googlecalendar]
+Hosts[]
+Hosts[]=google.com
+Hosts[]=www.google.com
+Size[]
+Size[small]=400x225
+Size[medium]=480x270
+Size[big]=800x600
 */ ?>
