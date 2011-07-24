@@ -11,6 +11,7 @@ Platforms[]=googlecalendar
 [vimeo]
 Hosts[]
 Hosts[]=vimeo.com
+# Remember to update [CustomAttribute_webobject_size]Selection[...]=... in settings/ezoe_attributes.ini.append.php when new dimension is added.
 Size[]
 Size[small]=400x225
 Size[medium]=480x270
